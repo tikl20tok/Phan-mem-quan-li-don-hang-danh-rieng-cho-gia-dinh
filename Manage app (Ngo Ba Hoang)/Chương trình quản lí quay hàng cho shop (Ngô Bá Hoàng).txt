@@ -1,0 +1,45 @@
+Khởi đầu:
+  1. Nhập đường dẫn thư mục đích (Lưu vào biến THU_MUC_DICH)
+  2. Nếu THU_MUC_DICH chưa có trên máy ➔ Tạo mới nó.
+  3. Mở kết nối giám sát đến thư mục "Camera Roll".
+
+Vòng lặp vô tận (Xử lý từng đơn hàng): cơ bản là queue
+  A. Nhập MÃ_ĐON_HÀNG từ bàn phím (hoặc máy quét).
+  B. Bật chế độ "Chờ sự kiện" từ hàm ReadDirectoryChangesW.
+  C. KHI CÓ FILE XUẤT HIỆN:
+       - Kiểm tra xem có phải đuôi ".mp4" (hoặc định dạng video) không.
+       - Nếu đúng ➔ Lưu lại TÊN_FILE_GỐC.
+  D. Chờ 1-2 giây cho ứng dụng Camera nhả file ra hoàn toàn.
+  E. Tạo ĐƯỜNG_DẪN_MỚI = THU_MUC_DICH + MÃ_ĐON_HÀNG + ".mp4".
+  F. Gọi hàm rename(TÊN_FILE_GỐC, ĐƯỜNG_DẪN_MỚI).
+  G. In ra màn hình: "Đã xử lý xong!" ➔ Quay lại bước A.
+
+
+
+
+
+
+
+
+
+
+
+Trạng thái 1: QUÉT MÃ ĐƠN (Sử dụng OpenCV)
+  - Chương trình kích hoạt Camera.
+  - Vòng lặp liên tục:
+      1. Chụp 1 khung hình (Frame) từ Camera.
+      2. Chuyển khung hình đó sang Trắng - Đen bằng Adaptive Thresholding.
+      3. Ném cái ma trận ảnh đã xử lý này vào cho thư viện ZBar/ZXing.
+      4. ZBar quét một đường cắt ngang ➔ Nếu giải mã ra chuỗi ký tự (Ví dụ: "SP6789")
+         ➔ Kêu "Tít" một phát ➔ Tắt Camera ➔ Lưu chuỗi này vào biến MA_DON.
+         ➔ Tự động nhảy sang Trạng thái 2.
+
+Trạng thái 2: RÌNH FILE VIDEO (Sử dụng Win32 API)
+  - Bật bộ rình thư mục "Camera Roll".
+  - Bạn bấm Quay/Dừng trên app Camera Windows.
+  - Có file `.mp4` mới xuất hiện ➔ Lưu đường dẫn vào biến FILE_GỐC.
+
+Trạng thái 3: ĐỔI TÊN & DI CHUYỂN
+  - Đợi file hết bận.
+  - Cắt file sang THƯ_MỤC_ĐÍCH với tên mới là MA_DON + ".mp4".
+  - Quay trở lại Trạng thái 1 cho đơn hàng tiếp theo.
