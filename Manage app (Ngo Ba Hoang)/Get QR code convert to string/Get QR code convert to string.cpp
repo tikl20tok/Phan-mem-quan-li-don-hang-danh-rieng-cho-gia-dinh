@@ -11,9 +11,17 @@ using namespace std;
 
 /*
 cấm sửa endl thành "\n", hay đi thi nên cần kết quả 1 lần, đây cân phải push kết quả luôn
-
-
 */
+
+bool file_da_san_sang(const string& ten_file) 
+{
+    ifstream f(ten_file, ios::binary | ios::app);
+    return f.is_open(); // Nếu mở được trả về true, ngược lại false
+    //cái này để tránh việc video bị crash
+}
+
+
+
 int main()
 {
 
@@ -57,7 +65,10 @@ int main()
 
     long long so_ngay_tu_dong_xoa;
     cout<<"Hay nhap so ngay TU DONG XOA VIDEO: "<<endl;
+
     cin>>so_ngay_tu_dong_xoa;
+    cin.ignore();//cái này bỏ đi cũng được, tùy nhưng nếu nay mai update code thì coi như sự chuẩn bị cho nhập thêm
+
     cout<<"=== DANG THUC HIEN VIEC KIEM TRA FILE CU VA XOA FILE CU TRONG TAM: "<<so_ngay_tu_dong_xoa<<"ngay ==="<<endl;
 
 
@@ -140,7 +151,6 @@ int main()
             for (auto const&file : filesystem::directory_iterator(path)) //đi từng file trong vector
             {
                 thoi_gian_max=max(thoi_gian_max, filesystem::last_write_time(file.path()));
-
             }
 
             string tenfile,loaifile;
@@ -179,7 +189,27 @@ int main()
                 cout<<"Khong co file nao, bo me em chup lai anh ma don di lol"<<endl<<endl;
                 continue; //ngắt vòng lặp
             }
-            cout<<"Hoan tat viec lay file... chuan bi sang buoc";
+
+            /*
+            liên tục kiểm tra xem là file có mở được không
+            nếu không mở được thì phải từ từ
+
+            LÍ DO CHÍNH: Kiểm tra xem video đã được quay xong chưa hay là ảnh đã mở được để lấy mã đơn chưa
+            */
+            cout<<"Dang thu xem file co the ton tai khong........"<<endl;
+            while (true)
+            {
+                this_thread::sleep_for(chrono::milliseconds(350));
+                if (file_da_san_sang(tenfile) == true)
+                {
+                    break;
+                }
+            }
+
+
+            cout<<"Hoan tat viec lay file !!!!!!!!!... chuan bi sang buoc";
+
+
 
             //xử lí hình ảnh (lấy mã đơn)
             if (loaifile == "image" && old_image != tenfile) //vừa đảm bảo là ảnh và vừa đảm bảo là ko bị trùng ảnh (khi dịch chuyển video)
@@ -247,6 +277,7 @@ int main()
                     // 3. Tạo đường dẫn mới hoàn chỉnh: chỉ lấy mã đơn hàng + đuôi file .mp4
                     string duong_dan_moi = folder_dich + "\\" + ma_don_hang + ".mp4";
 
+
                     try
                     {
                         // 4. Thực hiện Di chuyển + Đổi tên trong 1 nốt nhạc
@@ -304,4 +335,44 @@ có command promt rồi thì paste thằng này vào:
 "C:\Program Files\CodeBlocks\MinGW\bin\g++" -std=c++20 -O3 "Get QR code convert to string.cpp" -o "Phan mem (bo me em click vao day de chay).exe" -static-libgcc -static-libstdc++ -static
 
 yêu cầu máy có codeblocks bản mingw
+*/
+
+
+/*
+SƠ ĐỒ CỦA VIỆC CHẠY:
+[BƯỚC ĐẦU: KHỞI ĐỘNG]
+      │
+      ▼
+Quét sạch file cũ quá X ngày ở Folder Đích (Tránh đầy ổ cứng, an toàn).
+      │
+      ▼
+[BƯỚC RÌNH RẬP - VÒNG LẶP VĨNH CỬU] ◄────────────────────────────────────────┐
+      │                                                                      │
+      ├──► Không có biến động? ──► Sleep 350ms              ─────────────────┤
+      │                                                                      │
+      └──► CÓ BIẾN ĐỘNG! (Thư mục camera thay đổi thời gian)                 │
+            │                                                                │
+            ▼                                                                │
+      Đợi 150ms cho Windows cập nhật, bốc ngay thằng MỚI NHẤT                │
+            │                                                                │
+            ▼                                                                │
+      Vòng lặp True (Check File Lock): Đợi file ghi xong 100%                │
+            │                                                                │
+            ▼                                                                │
+      [PHÂN NHÁNH TRẠNG THÁI (STATE MACHINE)]                                │
+            │                                                                │
+            ├──► Nếu là ẢNH (.jpg/.png):                                     │
+            │      ├─ Check trùng ảnh cũ.                                    │
+            │      ├─ Gọi ZBar quét ngầm QR ──► Phọt mã đơn vào file txt.    │
+            │      ├─ Đọc file txt lấy mã đơn.                               │
+            │      └─ Chuyển trạng thái: old_state = "image". ───────────────┤
+            │                                                                │
+            └──► Nếu là VIDEO (.mp4):                                        │
+                   ├─ Check xem trước đó đã chụp ảnh chưa (old_state=="image")│
+                   ├─ ĐÚNG: Rename + Bốc thẳng sang ổ đích bằng mã đơn.mp4   │
+                   ├─ SAI: Chửi nhẹ "Bố mẹ chưa chụp ảnh" rồi reset.         │
+                   └─ Chuyển trạng thái: old_state = "video". ───────────────┘
+
+LƯU Ý: Code tự làm và có phân nhánh riêng cho từng việc trong nháp nên soạn thảo lại ra đây mất nhiều thời gian
+-> Bản thiết kế dòng chạy của code ở trên kia được đưa code cho AI phác thảo nên có thể không phải dòng chảy gốc
 */
