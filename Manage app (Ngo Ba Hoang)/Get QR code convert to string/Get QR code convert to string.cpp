@@ -58,7 +58,7 @@ int main()
     long long so_ngay_tu_dong_xoa;
     cout<<"Hay nhap so ngay TU DONG XOA VIDEO: "<<endl;
     cin>>so_ngay_tu_dong_xoa;
-    cout<<"=== DANG THUC HIEN VIEC KIEM TRA FILE CU VA XOA FILE CU TRONG TAM: "<<so_ngay_tu_dong_xoa<<" ==="<<endl;
+    cout<<"=== DANG THUC HIEN VIEC KIEM TRA FILE CU VA XOA FILE CU TRONG TAM: "<<so_ngay_tu_dong_xoa<<"ngay ==="<<endl;
 
 
     auto t_hien_tai = chrono::system_clock::now();
