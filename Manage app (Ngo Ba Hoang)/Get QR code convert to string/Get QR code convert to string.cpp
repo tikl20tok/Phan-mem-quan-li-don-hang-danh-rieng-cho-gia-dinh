@@ -1,3 +1,7 @@
+#pragma GCC optimize("O3")
+#pragma GCC optimize("unroll-loops")
+
+
 #include <bits/stdc++.h>
 #include <filesystem>
 #include <chrono>   // Thư viện để đo thời gian (dùng cho sleep)
@@ -17,8 +21,9 @@ int main()
     string s;
     string path = "";
 
-    cout<<"Hay nhap duong dan vao FILE CAMERA: "<<endl;
+    cout<<"Hay nhap duong dan vao CAMERA FOLDER: "<<endl;
     getline(cin, s);
+    cout<<"Duong dan vao CAMERA FOLDER la: "<<s<<endl;
 
     //Hoàn tất việc lấy đường dẫn vào camera
     path.reserve(10000);
@@ -33,10 +38,12 @@ int main()
     cout<<endl;
 
     //Hoàn tất việc lấy đường dẫn vào folder video được chỉ định
-    cout<<"Hay nhap duong dan vao FILE CHO VIDEO VAO TRONG: "<<endl;
+    cout<<"Hay nhap duong dan vao FOLDER CHO VIDEO VAO TRONG: "<<endl;
     getline(cin, s);
+    cout<<"Duong dan vao FOLDER CHO VIDEO VAO TRONG la: "<<s<<endl;
 
     string folder_dich = "";
+    folder_dich.reserve(10000);
 
     for (long long i=0;i<s.size();i++)
     {
@@ -47,6 +54,50 @@ int main()
         }
     }
     cout<<endl;
+
+    long long so_ngay_tu_dong_xoa;
+    cout<<"Hay nhap so ngay TU DONG XOA VIDEO: "<<endl;
+    cin>>so_ngay_tu_dong_xoa;
+    cout<<"=== DANG THUC HIEN VIEC KIEM TRA FILE CU VA XOA FILE CU TRONG TAM: "<<so_ngay_tu_dong_xoa<<" ==="<<endl;
+
+
+    auto t_hien_tai = chrono::system_clock::now();
+    long long giay_hien_tai = chrono::duration_cast<chrono::seconds>(t_hien_tai.time_since_epoch()).count();
+
+    vector<filesystem::path> nhung_file_can_xoa;
+    nhung_file_can_xoa.reserve(10000);
+
+    for (auto const&file : filesystem::directory_iterator(folder_dich)) //đi từng file trong vector, cụ thể là kiểm tra xem xóa file nào cần xóa
+    {
+        auto t_file = filesystem::last_write_time(file);
+        long long giay_file = chrono::duration_cast<chrono::seconds>(t_file.time_since_epoch()).count();
+
+        long long hieu = giay_hien_tai - giay_file;
+        long long hang_so_quy_doi = 24*60*60;
+        if (hieu >= so_ngay_tu_dong_xoa*hang_so_quy_doi)//quy đổi ra giây
+        {
+            //lệnh cho file cần remove vào
+            nhung_file_can_xoa.push_back(file.path());
+        }
+    }
+
+    //xóa những file được chỉ định, đã có path rồi
+    for (auto const&file : nhung_file_can_xoa)
+    {
+        filesystem::remove(file);//không sử dụng file.path() nữa vì bản chất truyền vào vector đã là path rồi
+    }
+
+    /*
+    LƯU Ý: Phần xóa trên kia bắt buộc phải dùng độ phức tạp 2n thay vì n vì 1 lí do đơn giản:
+    SỰ AN TOÀN CỦA VIỆC XÓA FILE
+    -> CẤM SỬA
+    nếu như mà về n thì cái file nó sẽ bị dịch chuyển ngay khi bị xóa trong vòng lặp
+    -> hên xui trong việc xóa file, có thể bị sót file
+    */
+
+
+
+
 
 
     // 1. Lấy mốc thời gian cũ làm chuẩn
@@ -68,8 +119,8 @@ int main()
 
     while (true)
     {
-        // Cho máy nghỉ 200ms để không ngốn CPU
-        this_thread::sleep_for(chrono::milliseconds(200));
+        // Cho máy nghỉ 350ms để không ngốn CPU + đợi file load
+        this_thread::sleep_for(chrono::milliseconds(350));
 
         // 3. Lấy thời gian mới nhất của thư mục
         auto thoi_gian_moi = filesystem::last_write_time(path);
@@ -80,7 +131,7 @@ int main()
             cout << "[!] BIEN DONG! Co thay doi trong folder" << endl;
 
             //từ từ để win update lại thời gian cho nó chính xác
-            this_thread::sleep_for(chrono::milliseconds(100));
+            this_thread::sleep_for(chrono::milliseconds(150));
 
             auto thoi_gian_max = filesystem::file_time_type::min();
 
