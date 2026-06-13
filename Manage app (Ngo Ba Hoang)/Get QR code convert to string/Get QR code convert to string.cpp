@@ -374,5 +374,5 @@ Quét sạch file cũ quá X ngày ở Folder Đích (Tránh đầy ổ cứng, 
                    └─ Chuyển trạng thái: old_state = "video". ───────────────┘
 
 LƯU Ý: Code tự làm và có phân nhánh riêng cho từng việc trong nháp nên soạn thảo lại ra đây mất nhiều thời gian
--> Bản thiết kế dòng chạy của code ở trên kia được đưa code cho AI phác thảo nên có thể không phải dòng chảy gốc
+-> Bản thiết kế dòng chạy của code ở trên kia được đưa code cho AI phác thảo nên có thể có một chút sai sót ngoài ý muốn nhưng cũng khá đúng rồi
 */
