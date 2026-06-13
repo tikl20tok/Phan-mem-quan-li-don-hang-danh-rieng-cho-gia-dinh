@@ -207,7 +207,7 @@ int main()
             }
 
 
-            cout<<"Hoan tat viec lay file !!!!!!!!!... chuan bi sang buoc";
+            cout<<"Hoan tat viec lay file !!!!!!!!!... chuan bi sang buoc"<<endl;
 
 
 
